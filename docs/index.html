@@ -35,6 +35,10 @@
       <path d="M7 7l9.5 9.5"/>
       <path d="M16 8v8h-8"/>
     </symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 5c-7 0-10 7-10 7s3 7 10 7 10-7 10-7-3-7-10-7z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </symbol>
     <symbol id="icon-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
       <path d="M6 12v.01"/>
       <circle cx="6" cy="12" r="3"/>
@@ -54,60 +58,65 @@
     <symbol id="icon-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M9 6l6 6-6 6"/>
     </symbol>
+    <symbol id="icon-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>
+      <path d="M7 11l5 5 5-5"/>
+      <path d="M12 4v12"/>
+    </symbol>
   </defs>
 </svg>
 
 <div id="app">
 
   <section class="screen screen--start active" id="screen-start">
-    <div class="screen__inner">
-      <div class="screen__header">
-        <div class="bot-tag">@PROFILE_MIRROR_BOT</div>
-        <h1 class="title-hero">Ваш LinkedIn<br>глазами других</h1>
-        <div class="accent-bar"></div>
-        <p class="lead">Покажу, как читается ваш профиль со стороны — глазами рекрутера и случайного коллеги.</p>
+    <div class="screen__body">
+      <div class="bot-tag">@PROFILE_MIRROR_BOT</div>
+      <h1 class="title-hero">Ваш LinkedIn<br>глазами других</h1>
+      <div class="accent-bar"></div>
+      <p class="lead">Покажу, как читается ваш профиль глазами рекрутера и случайного коллеги.</p>
 
-        <div class="bubbles">
-          <div class="bubble">
-            <div class="bubble__icon-wrap">
-              <svg class="bubble__icon" aria-hidden="true"><use href="#icon-recruiter"/></svg>
-            </div>
-            <div class="bubble__content">
-              <div class="bubble__label bubble__label--recruiter">РЕКРУТЕР</div>
-              <p class="bubble__quote" id="bubble-recruiter">Специфичный опыт. Подойдёт для AI-ролей.</p>
-            </div>
+      <div class="bubbles">
+        <div class="bubble">
+          <div class="bubble__icon-wrap">
+            <svg class="bubble__icon" aria-hidden="true"><use href="#icon-recruiter"/></svg>
           </div>
-          <div class="bubble">
-            <div class="bubble__icon-wrap">
-              <svg class="bubble__icon bubble__icon--muted" aria-hidden="true"><use href="#icon-colleague"/></svg>
-            </div>
-            <div class="bubble__content">
-              <div class="bubble__label bubble__label--colleague">КОЛЛЕГА</div>
-              <p class="bubble__quote" id="bubble-colleague">5 лет в Яндексе и свой проект — как успевает?</p>
-            </div>
+          <div class="bubble__content">
+            <div class="bubble__label bubble__label--recruiter">РЕКРУТЕР</div>
+            <p class="bubble__quote" id="bubble-recruiter">Специфичный опыт. Подойдёт для AI-ролей.</p>
+          </div>
+        </div>
+        <div class="bubble">
+          <div class="bubble__icon-wrap">
+            <svg class="bubble__icon bubble__icon--muted" aria-hidden="true"><use href="#icon-colleague"/></svg>
+          </div>
+          <div class="bubble__content">
+            <div class="bubble__label bubble__label--colleague">КОЛЛЕГА</div>
+            <p class="bubble__quote" id="bubble-colleague">5 лет в Яндексе и свой проект — как успевает?</p>
           </div>
         </div>
       </div>
-      <div class="screen__footer">
-        <button class="btn btn--primary" onclick="goToInput()">Начать</button>
-        <div class="hint">2 минуты · без регистрации</div>
-      </div>
+    </div>
+    <div class="screen__cta">
+      <button class="btn btn--primary" onclick="goToInput()">Начать</button>
+      <div class="hint">2 минуты · без регистрации</div>
     </div>
   </section>
 
   <section class="screen screen--input" id="screen-input">
-    <div class="screen__inner">
+    <div class="screen__body">
       <h2 class="title-section">Покажите профиль</h2>
       <p class="lead-sm">Откройте свой LinkedIn, выделите всё (Cmd+A → Cmd+C) и вставьте сюда.</p>
       <textarea id="profile-input" class="textarea" placeholder="Вставьте текст здесь…"></textarea>
-      <button class="btn btn--primary" onclick="goToProcessing()">Посмотреть результат</button>
+    </div>
+    <div class="screen__cta">
+      <button class="btn btn--primary" onclick="goToProcessing()">Разобрать профиль</button>
     </div>
   </section>
 
   <section class="screen screen--processing" id="screen-processing">
-    <div class="screen__inner">
+    <div class="screen__body screen__body--center">
       <h2 class="title-section title-center">Заглядываю в ваш профиль</h2>
-      <div class="progress" id="progress">
+      <div class="progress">
         <div class="progress__line">
           <div class="progress__fill" id="progress-fill"></div>
         </div>
@@ -135,7 +144,7 @@
   </section>
 
   <section class="screen screen--result" id="screen-result">
-    <div class="screen__inner">
+    <div class="screen__body screen__body--scroll">
       <div class="tabs">
         <button class="tab tab--active" data-tab="recruiter" onclick="switchTab('recruiter')">
           <svg class="tab__icon" aria-hidden="true"><use href="#icon-recruiter"/></svg>Рекрутер
@@ -146,63 +155,67 @@
       </div>
 
       <div class="result-content" id="result-recruiter">
-        <div class="block">
+        <div class="block" data-block="overview">
           <div class="block__label block__label--purple">ПЕРВОЕ ВПЕЧАТЛЕНИЕ</div>
           <p class="block__text block__text--serif" id="recruiter-overview">…</p>
         </div>
-        <div class="block block--row">
+        <div class="block block--row" data-block="strengths">
           <svg class="block__icon block__icon--green" aria-hidden="true"><use href="#icon-arrow-up-right"/></svg>
           <div class="block__col">
             <div class="block__label block__label--green">СИЛЬНОЕ</div>
             <ul class="block__list" id="recruiter-strengths"></ul>
           </div>
         </div>
-        <div class="block block--row">
+        <div class="block block--row" data-block="weaknesses">
           <svg class="block__icon block__icon--red" aria-hidden="true"><use href="#icon-arrow-down-right"/></svg>
           <div class="block__col">
             <div class="block__label block__label--red">СЛАБОЕ</div>
             <ul class="block__list" id="recruiter-weaknesses"></ul>
           </div>
         </div>
-        <div class="block">
+        <div class="block" data-block="recommendations">
           <div class="block__label">РЕКОМЕНДАЦИИ</div>
           <ul class="block__list" id="recruiter-recommendations"></ul>
         </div>
       </div>
 
       <div class="result-content" id="result-colleague" hidden>
-        <div class="block">
+        <div class="block" data-block="overview">
           <div class="block__label block__label--purple">ПЕРВОЕ ВПЕЧАТЛЕНИЕ</div>
           <p class="block__text block__text--serif" id="colleague-overview">…</p>
         </div>
-        <div class="block block--row">
+        <div class="block block--row" data-block="strengths">
           <svg class="block__icon block__icon--green" aria-hidden="true"><use href="#icon-arrow-up-right"/></svg>
           <div class="block__col">
-            <div class="block__label block__label--green">СИЛЬНОЕ</div>
+            <div class="block__label block__label--green">ЦЕПЛЯЕТ</div>
             <ul class="block__list" id="colleague-strengths"></ul>
           </div>
         </div>
-        <div class="block block--row">
+        <div class="block block--row" data-block="weaknesses">
           <svg class="block__icon block__icon--red" aria-hidden="true"><use href="#icon-arrow-down-right"/></svg>
           <div class="block__col">
-            <div class="block__label block__label--red">СЛАБОЕ</div>
+            <div class="block__label block__label--red">НЕ ХВАТАЕТ</div>
             <ul class="block__list" id="colleague-weaknesses"></ul>
           </div>
         </div>
-        <div class="block">
-          <div class="block__label">РЕКОМЕНДАЦИИ</div>
-          <ul class="block__list" id="colleague-recommendations"></ul>
+        <div class="block block--row" data-block="observations">
+          <svg class="block__icon block__icon--purple" aria-hidden="true"><use href="#icon-eye"/></svg>
+          <div class="block__col">
+            <div class="block__label block__label--purple">НАБЛЮДЕНИЯ</div>
+            <ul class="block__list" id="colleague-observations"></ul>
+          </div>
         </div>
       </div>
-
-      <button class="btn btn--primary btn--share" onclick="goToSwiper()">
+    </div>
+    <div class="screen__cta">
+      <button class="btn btn--primary" onclick="goToSwiper()">
         <svg class="btn__icon" aria-hidden="true"><use href="#icon-share"/></svg>Поделиться карточкой
       </button>
     </div>
   </section>
 
   <section class="screen screen--swiper" id="screen-swiper">
-    <div class="screen__inner">
+    <div class="screen__body">
       <div class="swiper-header">
         <button class="back-btn" onclick="goToResult()" aria-label="Назад">
           <svg aria-hidden="true"><use href="#icon-arrow-left"/></svg>
@@ -220,9 +233,16 @@
         </button>
       </div>
       <div class="dots" id="dots"></div>
+    </div>
+    <div class="screen__cta">
       <div class="swiper-actions">
-        <button class="btn btn--primary" onclick="downloadCard()">Скачать</button>
-        <button class="btn btn--secondary" onclick="shareCard()">Поделиться</button>
+        <button class="btn btn--secondary btn--icon-only" onclick="downloadCard()" aria-label="Скачать">
+          <svg class="btn__icon" aria-hidden="true"><use href="#icon-download"/></svg>
+          <span class="btn__text">Скачать</span>
+        </button>
+        <button class="btn btn--primary" onclick="shareCard()">
+          <svg class="btn__icon" aria-hidden="true"><use href="#icon-share"/></svg>Поделиться
+        </button>
       </div>
     </div>
   </section>
