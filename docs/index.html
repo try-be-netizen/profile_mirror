@@ -98,7 +98,7 @@
     </div>
     <div class="screen__cta">
       <button class="btn btn--primary" onclick="goToInput()">Начать</button>
-      <div class="hint">2 минуты · без регистрации</div>
+      <div class="hint">20 секунд · без регистрации</div>
     </div>
   </section>
 
@@ -110,6 +110,7 @@
     </div>
     <div class="screen__cta">
       <button class="btn btn--primary" onclick="goToProcessing()">Разобрать профиль</button>
+      <div class="hint">20 секунд · без регистрации</div>
     </div>
   </section>
 
@@ -184,19 +185,9 @@
           <div class="block__label block__label--purple">ПЕРВОЕ ВПЕЧАТЛЕНИЕ</div>
           <p class="block__text block__text--serif" id="colleague-overview">…</p>
         </div>
-        <div class="block block--row" data-block="strengths">
-          <svg class="block__icon block__icon--green" aria-hidden="true"><use href="#icon-arrow-up-right"/></svg>
-          <div class="block__col">
-            <div class="block__label block__label--green">ЦЕПЛЯЕТ</div>
-            <ul class="block__list" id="colleague-strengths"></ul>
-          </div>
-        </div>
-        <div class="block block--row" data-block="weaknesses">
-          <svg class="block__icon block__icon--red" aria-hidden="true"><use href="#icon-arrow-down-right"/></svg>
-          <div class="block__col">
-            <div class="block__label block__label--red">НЕ ХВАТАЕТ</div>
-            <ul class="block__list" id="colleague-weaknesses"></ul>
-          </div>
+        <div class="block" data-block="thoughts">
+          <div class="block__label block__label--purple">МЫСЛИ ВСЛУХ</div>
+          <ul class="block__list" id="colleague-thoughts"></ul>
         </div>
         <div class="block block--row" data-block="observations">
           <svg class="block__icon block__icon--purple" aria-hidden="true"><use href="#icon-eye"/></svg>
