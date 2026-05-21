@@ -1,3 +1,3 @@
 window.PROFILE_MIRROR_CONFIG = {
-  botApi: 'https://publishers-advantages-prostate-organizational.trycloudflare.com',
+  botApi: 'https://polo-memo-rocks-mazda.trycloudflare.com',
 };
