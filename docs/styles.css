@@ -78,6 +78,10 @@ html, body {
   background: var(--bg);
   border-top: 0.5px solid var(--border-light);
   flex-shrink: 0;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 @keyframes screenFadeIn {
@@ -234,7 +238,7 @@ html, body {
   border: 0.5px solid var(--accent);
 }
 .btn__icon { width: 16px; height: 16px; }
-.screen--start .screen__cta .btn { margin-bottom: 14px; }
+.screen--start .screen__cta .hint { margin-top: 10px; }
 
 .textarea {
   background: var(--bg-soft);
