@@ -12,7 +12,44 @@ let state = {
   userInfo: null,
   currentCardIndex: 0,
   totalCards: 5,
+  processingTimer: null,
+  previewRotationTimer: null,
 };
+
+const PREVIEW_QUOTES = [
+  'Специфичный опыт, но видно — доводит до запуска.',
+  'Что её там удержало 5 лет? Любовь к теме или удобство?',
+  '«increased engagement» — на сколько? Без числа звучит как презентация.',
+  '5 лет в Яндексе и свой проект — интересно бы спросить, как успевает.',
+  'Подойдёт для AI-ролей. Для общих продуктовых — будут сомнения.',
+];
+
+function startPreviewRotation() {
+  const node = document.getElementById('preview-quote-text');
+  if (!node) return;
+  let i = 0;
+  state.previewRotationTimer = setInterval(() => {
+    i = (i + 1) % PREVIEW_QUOTES.length;
+    node.style.opacity = '0';
+    setTimeout(() => {
+      node.textContent = PREVIEW_QUOTES[i];
+      node.style.opacity = '1';
+    }, 250);
+  }, 3500);
+}
+
+function stopPreviewRotation() {
+  if (state.previewRotationTimer) {
+    clearInterval(state.previewRotationTimer);
+    state.previewRotationTimer = null;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const node = document.getElementById('preview-quote-text');
+  if (node) node.style.transition = 'opacity 0.3s ease-out';
+  startPreviewRotation();
+});
 
 function getUserInfo() {
   if (tg?.initDataUnsafe?.user) {
@@ -32,6 +69,7 @@ function showScreen(id) {
 }
 
 function goToInput() {
+  stopPreviewRotation();
   showScreen('screen-input');
 }
 
@@ -43,12 +81,12 @@ async function goToProcessing() {
   }
   state.profileText = text;
   showScreen('screen-processing');
-  animateSteps();
+  animateProgress();
   try {
     const result = await callBot(text);
     state.result = result;
     renderResult();
-    setTimeout(() => showScreen('screen-result'), 500);
+    setTimeout(() => showScreen('screen-result'), 600);
   } catch (err) {
     console.error(err);
     alert('Что-то пошло не так. Попробуйте ещё раз через минуту.');
@@ -56,25 +94,30 @@ async function goToProcessing() {
   }
 }
 
-function animateSteps() {
-  const steps = document.querySelectorAll('.step');
-  steps.forEach(s => s.classList.remove('step--active', 'step--done'));
+function animateProgress() {
+  if (state.processingTimer) clearInterval(state.processingTimer);
+  const steps = document.querySelectorAll('.progress__step');
+  const fill = document.getElementById('progress-fill');
+  steps.forEach(s => s.classList.remove('is-active', 'is-done'));
+  fill.style.height = '0%';
+
+  steps[0].classList.add('is-active');
+  fill.style.height = '12%';
+
   let i = 0;
-  steps[0].classList.add('step--active');
-  const interval = setInterval(() => {
-    if (i >= steps.length) {
-      clearInterval(interval);
+  state.processingTimer = setInterval(() => {
+    if (i >= steps.length - 1) {
+      clearInterval(state.processingTimer);
+      state.processingTimer = null;
       return;
     }
-    if (i > 0) {
-      steps[i - 1].classList.remove('step--active');
-      steps[i - 1].classList.add('step--done');
-    }
-    if (i < steps.length) {
-      steps[i].classList.add('step--active');
-    }
+    steps[i].classList.remove('is-active');
+    steps[i].classList.add('is-done');
     i++;
-  }, 2200);
+    steps[i].classList.add('is-active');
+    const progress = ((i + 0.5) / steps.length) * 100;
+    fill.style.height = progress + '%';
+  }, 2500);
 }
 
 async function callBot(profileText) {
@@ -88,27 +131,30 @@ async function callBot(profileText) {
       init_data: tg?.initData || '',
     }),
   });
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
-  }
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
   return await response.json();
 }
 
 function renderResult() {
   const { recruiter, colleague } = state.result;
   document.getElementById('recruiter-overview').textContent = recruiter.overview;
-  document.getElementById('recruiter-strengths').textContent = formatList(recruiter.strengths);
-  document.getElementById('recruiter-weaknesses').textContent = formatList(recruiter.weaknesses);
-  document.getElementById('recruiter-recommendations').textContent = formatList(recruiter.recommendations);
+  renderList('recruiter-strengths', recruiter.strengths);
+  renderList('recruiter-weaknesses', recruiter.weaknesses);
+  renderList('recruiter-recommendations', recruiter.recommendations);
   document.getElementById('colleague-overview').textContent = colleague.overview;
-  document.getElementById('colleague-strengths').textContent = formatList(colleague.strengths);
-  document.getElementById('colleague-weaknesses').textContent = formatList(colleague.weaknesses);
-  document.getElementById('colleague-recommendations').textContent = formatList(colleague.recommendations);
+  renderList('colleague-strengths', colleague.strengths);
+  renderList('colleague-weaknesses', colleague.weaknesses);
+  renderList('colleague-recommendations', colleague.recommendations);
 }
 
-function formatList(arr) {
-  if (!arr || !arr.length) return '—';
-  return arr.map(item => `• ${item}`).join('\n');
+function renderList(elId, items) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!items || !items.length) {
+    el.innerHTML = '<li>—</li>';
+    return;
+  }
+  el.innerHTML = items.map(item => `<li>${escapeHtml(item)}</li>`).join('');
 }
 
 function switchTab(tabName) {
@@ -118,9 +164,7 @@ function switchTab(tabName) {
   document.getElementById('result-colleague').hidden = tabName !== 'colleague';
 }
 
-function goToResult() {
-  showScreen('screen-result');
-}
+function goToResult() { showScreen('screen-result'); }
 
 function goToSwiper() {
   buildCards();
@@ -138,8 +182,8 @@ function buildCards() {
     buildPosterCard(recruiter, colleague, name),
     buildRoleCard('recruiter', recruiter.overview, name),
     buildRoleCard('colleague', colleague.overview, name),
-    buildBadgeCard('strong', recruiter.strengths?.[0] || colleague.strengths?.[0] || '—', name),
-    buildBadgeCard('weak', recruiter.weaknesses?.[0] || colleague.weaknesses?.[0] || '—', name),
+    buildBadgeCard('strong', firstItem(recruiter.strengths) || firstItem(colleague.strengths) || '—', name),
+    buildBadgeCard('weak', firstItem(recruiter.weaknesses) || firstItem(colleague.weaknesses) || '—', name),
   ];
   state.totalCards = cards.length;
   swiper.innerHTML = `<div class="swiper__track" id="swiper-track">${cards.join('')}</div>`;
@@ -148,20 +192,25 @@ function buildCards() {
   attachSwipeHandlers();
 }
 
+function firstItem(arr) {
+  if (!arr || !arr.length) return null;
+  return arr[0];
+}
+
 function buildPosterCard(recruiter, colleague, name) {
   return `
     <div class="share-card" data-card-type="poster">
       <div class="share-card__brand">LinkedIn глазами других</div>
       <div class="share-card__block">
         <div class="share-card__role">
-          <i class="ti ti-zoom-question" aria-hidden="true"></i>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M21 21l-6-6"/><path d="M10 8v4M8 10h4"/></svg>
           <span class="share-card__role-name">РЕКРУТЕР</span>
         </div>
         <p class="share-card__quote">${escapeHtml(recruiter.overview)}</p>
       </div>
       <div class="share-card__block">
         <div class="share-card__role">
-          <i class="ti ti-coffee" aria-hidden="true"></i>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c.83.642 2.077 1.017 3.5 1.017s2.67-.375 3.5-1.017c.83-.642 2.077-1.017 3.5-1.017s2.67.375 3.5 1.017"/><path d="M8 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M12 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M3 10h14v5a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v-5z"/><path d="M16.746 16.726a3 3 0 1 0 .252-5.555"/></svg>
           <span class="share-card__role-name">КОЛЛЕГА</span>
         </div>
         <p class="share-card__quote">${escapeHtml(colleague.overview)}</p>
@@ -178,12 +227,14 @@ function buildPosterCard(recruiter, colleague, name) {
 }
 
 function buildRoleCard(role, text, name) {
-  const icon = role === 'recruiter' ? 'ti-zoom-question' : 'ti-coffee';
+  const iconSvg = role === 'recruiter'
+    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M21 21l-6-6"/><path d="M10 8v4M8 10h4"/></svg>'
+    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c.83.642 2.077 1.017 3.5 1.017s2.67-.375 3.5-1.017c.83-.642 2.077-1.017 3.5-1.017s2.67.375 3.5 1.017"/><path d="M8 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M12 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M3 10h14v5a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v-5z"/><path d="M16.746 16.726a3 3 0 1 0 .252-5.555"/></svg>';
   const label = role === 'recruiter' ? 'ВЗГЛЯД РЕКРУТЕРА' : 'ВЗГЛЯД КОЛЛЕГИ';
   return `
     <div class="share-card" data-card-type="${role}">
       <div class="share-card__role" style="margin-bottom: 22px;">
-        <i class="ti ${icon}" aria-hidden="true"></i>
+        ${iconSvg}
         <span class="share-card__role-name">${label}</span>
       </div>
       <p class="share-card__quote share-card__quote--big">«${escapeHtml(text)}»</p>
@@ -230,6 +281,24 @@ function updateSwiperPosition() {
   document.querySelectorAll('.dot').forEach((d, i) => {
     d.classList.toggle('dot--active', i === state.currentCardIndex);
   });
+  const prevBtn = document.querySelector('.swiper-arrow--prev');
+  const nextBtn = document.querySelector('.swiper-arrow--next');
+  if (prevBtn) prevBtn.disabled = state.currentCardIndex === 0;
+  if (nextBtn) nextBtn.disabled = state.currentCardIndex === state.totalCards - 1;
+}
+
+function prevCard() {
+  if (state.currentCardIndex > 0) {
+    state.currentCardIndex--;
+    updateSwiperPosition();
+  }
+}
+
+function nextCard() {
+  if (state.currentCardIndex < state.totalCards - 1) {
+    state.currentCardIndex++;
+    updateSwiperPosition();
+  }
 }
 
 function attachSwipeHandlers() {
@@ -238,27 +307,33 @@ function attachSwipeHandlers() {
   let currentX = 0;
   let isDragging = false;
 
-  swiper.addEventListener('touchstart', e => {
-    startX = e.touches[0].clientX;
+  const onStart = (clientX) => {
+    startX = clientX;
+    currentX = clientX;
     isDragging = true;
-  });
-  swiper.addEventListener('touchmove', e => {
+  };
+  const onMove = (clientX) => {
     if (!isDragging) return;
-    currentX = e.touches[0].clientX;
-  });
-  swiper.addEventListener('touchend', () => {
+    currentX = clientX;
+  };
+  const onEnd = () => {
     if (!isDragging) return;
     isDragging = false;
     const dx = currentX - startX;
     if (Math.abs(dx) > 50) {
-      if (dx < 0 && state.currentCardIndex < state.totalCards - 1) {
-        state.currentCardIndex++;
-      } else if (dx > 0 && state.currentCardIndex > 0) {
-        state.currentCardIndex--;
-      }
-      updateSwiperPosition();
+      if (dx < 0) nextCard();
+      else if (dx > 0) prevCard();
     }
-  });
+  };
+
+  swiper.addEventListener('touchstart', e => onStart(e.touches[0].clientX), { passive: true });
+  swiper.addEventListener('touchmove', e => onMove(e.touches[0].clientX), { passive: true });
+  swiper.addEventListener('touchend', onEnd);
+
+  swiper.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX); });
+  swiper.addEventListener('mousemove', e => onMove(e.clientX));
+  swiper.addEventListener('mouseup', onEnd);
+  swiper.addEventListener('mouseleave', onEnd);
 }
 
 async function renderCurrentCardToImage() {
