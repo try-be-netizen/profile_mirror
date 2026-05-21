@@ -16,38 +16,58 @@ let state = {
   previewRotationTimer: null,
 };
 
-const PREVIEW_QUOTES = [
-  'Специфичный опыт, но видно — доводит до запуска.',
-  'Что её там удержало 5 лет? Любовь к теме или удобство?',
-  '«increased engagement» — на сколько? Без числа звучит как презентация.',
-  '5 лет в Яндексе и свой проект — интересно бы спросить, как успевает.',
-  'Подойдёт для AI-ролей. Для общих продуктовых — будут сомнения.',
+const RECRUITER_QUOTES = [
+  'Специфичный опыт. Подойдёт для AI-ролей.',
+  '«increased engagement» — на сколько?',
+  'Видно, что доводит продукты до запуска.',
+  'Будут сомнения по общим продуктовым ролям.',
+  'Глубоко копала в speech-tech — это плюс.',
+];
+const COLLEAGUE_QUOTES = [
+  '5 лет в Яндексе и свой проект — как успевает?',
+  'Что её там удержало так надолго?',
+  'Naumen Erudite VoiceOut — а что это вообще?',
+  'Любит speech-tech, но не сказала почему.',
+  'Хочется спросить про переход на агентные продукты.',
 ];
 
-function startPreviewRotation() {
-  const node = document.getElementById('preview-quote-text');
-  if (!node) return;
+function rotateBubble(elId, quotes, intervalMs, startDelay) {
+  const el = document.getElementById(elId);
+  if (!el) return null;
   let i = 0;
-  state.previewRotationTimer = setInterval(() => {
-    i = (i + 1) % PREVIEW_QUOTES.length;
-    node.style.opacity = '0';
-    setTimeout(() => {
-      node.textContent = PREVIEW_QUOTES[i];
-      node.style.opacity = '1';
-    }, 250);
-  }, 3500);
+  const timeoutId = setTimeout(() => {
+    const intervalId = setInterval(() => {
+      i = (i + 1) % quotes.length;
+      el.style.opacity = '0';
+      setTimeout(() => {
+        el.textContent = quotes[i];
+        el.style.opacity = '1';
+      }, 350);
+    }, intervalMs);
+    state.bubbleIntervals.push(intervalId);
+  }, startDelay);
+  state.bubbleTimeouts.push(timeoutId);
+}
+
+function startPreviewRotation() {
+  state.bubbleIntervals = [];
+  state.bubbleTimeouts = [];
+  rotateBubble('bubble-recruiter', RECRUITER_QUOTES, 3800, 1500);
+  rotateBubble('bubble-colleague', COLLEAGUE_QUOTES, 4900, 3200);
 }
 
 function stopPreviewRotation() {
-  if (state.previewRotationTimer) {
-    clearInterval(state.previewRotationTimer);
-    state.previewRotationTimer = null;
-  }
+  (state.bubbleIntervals || []).forEach(id => clearInterval(id));
+  (state.bubbleTimeouts || []).forEach(id => clearTimeout(id));
+  state.bubbleIntervals = [];
+  state.bubbleTimeouts = [];
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const node = document.getElementById('preview-quote-text');
-  if (node) node.style.transition = 'opacity 0.3s ease-out';
+  const recruiterBubble = document.getElementById('bubble-recruiter');
+  const colleagueBubble = document.getElementById('bubble-colleague');
+  if (recruiterBubble) recruiterBubble.style.transition = 'opacity 0.3s ease-out';
+  if (colleagueBubble) colleagueBubble.style.transition = 'opacity 0.3s ease-out';
   startPreviewRotation();
 });
 
