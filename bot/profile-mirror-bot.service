@@ -1,0 +1,15 @@
+[Unit]
+Description=Profile Mirror Bot
+After=network.target
+
+[Service]
+Type=simple
+User=brain
+WorkingDirectory=/home/brain/profile_mirror/bot
+EnvironmentFile=/home/brain/profile_mirror/bot/.env
+ExecStart=/home/brain/profile_mirror/bot/venv/bin/python -m bot
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
