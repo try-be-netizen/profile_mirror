@@ -9,10 +9,53 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Lora:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/dist/tabler-icons.min.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="icon-recruiter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="10" cy="10" r="6"/>
+      <path d="M21 21l-6-6"/>
+      <path d="M10 8v4M8 10h4"/>
+    </symbol>
+    <symbol id="icon-colleague" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 14c.83.642 2.077 1.017 3.5 1.017s2.67-.375 3.5-1.017c.83-.642 2.077-1.017 3.5-1.017s2.67.375 3.5 1.017"/>
+      <path d="M8 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/>
+      <path d="M12 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/>
+      <path d="M3 10h14v5a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v-5z"/>
+      <path d="M16.746 16.726a3 3 0 1 0 .252-5.555"/>
+    </symbol>
+    <symbol id="icon-arrow-up-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 17l9.5-9.5"/>
+      <path d="M8 7h8v8"/>
+    </symbol>
+    <symbol id="icon-arrow-down-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 7l9.5 9.5"/>
+      <path d="M16 8v8h-8"/>
+    </symbol>
+    <symbol id="icon-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 12v.01"/>
+      <circle cx="6" cy="12" r="3"/>
+      <circle cx="18" cy="6" r="3"/>
+      <circle cx="18" cy="18" r="3"/>
+      <path d="M8.7 10.7l6.6-3.4"/>
+      <path d="M8.7 13.3l6.6 3.4"/>
+    </symbol>
+    <symbol id="icon-arrow-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12l14 0"/>
+      <path d="M5 12l6 6"/>
+      <path d="M5 12l6 -6"/>
+    </symbol>
+    <symbol id="icon-chevron-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 6l-6 6 6 6"/>
+    </symbol>
+    <symbol id="icon-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9 6l6 6-6 6"/>
+    </symbol>
+  </defs>
+</svg>
 
 <div id="app">
 
@@ -23,9 +66,22 @@
         <h1 class="title-hero">Ваш LinkedIn<br>глазами других</h1>
         <div class="accent-bar"></div>
         <p class="lead">Покажу, как читается ваш профиль со стороны — глазами рекрутера и случайного коллеги.</p>
-        <div class="lenses">
-          <div class="lens"><i class="ti ti-zoom-question" aria-hidden="true"></i>Рекрутер</div>
-          <div class="lens"><i class="ti ti-coffee" aria-hidden="true"></i>Коллега</div>
+
+        <div class="preview-card">
+          <div class="preview-card__lenses">
+            <div class="preview-lens">
+              <svg class="preview-lens__icon" aria-hidden="true"><use href="#icon-recruiter"/></svg>
+              <span class="preview-lens__label">Рекрутер</span>
+            </div>
+            <div class="preview-lens">
+              <svg class="preview-lens__icon preview-lens__icon--muted" aria-hidden="true"><use href="#icon-colleague"/></svg>
+              <span class="preview-lens__label">Коллега</span>
+            </div>
+          </div>
+          <div class="preview-quote">
+            <div class="preview-quote__mark">«</div>
+            <p class="preview-quote__text" id="preview-quote-text">Специфичный опыт, но видно — доводит до запуска.</p>
+          </div>
         </div>
       </div>
       <div class="screen__footer">
@@ -47,24 +103,29 @@
   <section class="screen screen--processing" id="screen-processing">
     <div class="screen__inner">
       <h2 class="title-section title-center">Заглядываю в ваш профиль</h2>
-      <ul class="steps" id="steps">
-        <li class="step" data-step="0">
-          <span class="step__bullet"></span>
-          <span class="step__label">Внимательно читаю профиль</span>
-        </li>
-        <li class="step" data-step="1">
-          <span class="step__bullet"></span>
-          <span class="step__label">Изучаю опыт и формулировки</span>
-        </li>
-        <li class="step" data-step="2">
-          <span class="step__bullet"></span>
-          <span class="step__label">Подмечаю интересные моменты</span>
-        </li>
-        <li class="step" data-step="3">
-          <span class="step__bullet"></span>
-          <span class="step__label">Собираю впечатление в одно целое</span>
-        </li>
-      </ul>
+      <div class="progress" id="progress">
+        <div class="progress__line">
+          <div class="progress__fill" id="progress-fill"></div>
+        </div>
+        <ul class="progress__steps">
+          <li class="progress__step" data-step="0">
+            <span class="progress__marker"></span>
+            <span class="progress__label">Внимательно читаю профиль</span>
+          </li>
+          <li class="progress__step" data-step="1">
+            <span class="progress__marker"></span>
+            <span class="progress__label">Изучаю опыт и формулировки</span>
+          </li>
+          <li class="progress__step" data-step="2">
+            <span class="progress__marker"></span>
+            <span class="progress__label">Подмечаю интересные моменты</span>
+          </li>
+          <li class="progress__step" data-step="3">
+            <span class="progress__marker"></span>
+            <span class="progress__label">Собираю впечатление в одно целое</span>
+          </li>
+        </ul>
+      </div>
       <div class="hint hint--bottom">Это займёт около 10 секунд</div>
     </div>
   </section>
@@ -73,10 +134,10 @@
     <div class="screen__inner">
       <div class="tabs">
         <button class="tab tab--active" data-tab="recruiter" onclick="switchTab('recruiter')">
-          <i class="ti ti-zoom-question" aria-hidden="true"></i>Рекрутер
+          <svg class="tab__icon" aria-hidden="true"><use href="#icon-recruiter"/></svg>Рекрутер
         </button>
         <button class="tab" data-tab="colleague" onclick="switchTab('colleague')">
-          <i class="ti ti-coffee" aria-hidden="true"></i>Коллега
+          <svg class="tab__icon" aria-hidden="true"><use href="#icon-colleague"/></svg>Коллега
         </button>
       </div>
 
@@ -86,22 +147,22 @@
           <p class="block__text block__text--serif" id="recruiter-overview">…</p>
         </div>
         <div class="block block--row">
-          <i class="ti ti-arrow-up-right block__icon block__icon--green" aria-hidden="true"></i>
+          <svg class="block__icon block__icon--green" aria-hidden="true"><use href="#icon-arrow-up-right"/></svg>
           <div class="block__col">
             <div class="block__label block__label--green">СИЛЬНОЕ</div>
-            <p class="block__text" id="recruiter-strengths">…</p>
+            <ul class="block__list" id="recruiter-strengths"></ul>
           </div>
         </div>
         <div class="block block--row">
-          <i class="ti ti-arrow-down-right block__icon block__icon--red" aria-hidden="true"></i>
+          <svg class="block__icon block__icon--red" aria-hidden="true"><use href="#icon-arrow-down-right"/></svg>
           <div class="block__col">
             <div class="block__label block__label--red">СЛАБОЕ</div>
-            <p class="block__text" id="recruiter-weaknesses">…</p>
+            <ul class="block__list" id="recruiter-weaknesses"></ul>
           </div>
         </div>
         <div class="block">
           <div class="block__label">РЕКОМЕНДАЦИИ</div>
-          <p class="block__text" id="recruiter-recommendations">…</p>
+          <ul class="block__list" id="recruiter-recommendations"></ul>
         </div>
       </div>
 
@@ -111,27 +172,27 @@
           <p class="block__text block__text--serif" id="colleague-overview">…</p>
         </div>
         <div class="block block--row">
-          <i class="ti ti-arrow-up-right block__icon block__icon--green" aria-hidden="true"></i>
+          <svg class="block__icon block__icon--green" aria-hidden="true"><use href="#icon-arrow-up-right"/></svg>
           <div class="block__col">
             <div class="block__label block__label--green">СИЛЬНОЕ</div>
-            <p class="block__text" id="colleague-strengths">…</p>
+            <ul class="block__list" id="colleague-strengths"></ul>
           </div>
         </div>
         <div class="block block--row">
-          <i class="ti ti-arrow-down-right block__icon block__icon--red" aria-hidden="true"></i>
+          <svg class="block__icon block__icon--red" aria-hidden="true"><use href="#icon-arrow-down-right"/></svg>
           <div class="block__col">
             <div class="block__label block__label--red">СЛАБОЕ</div>
-            <p class="block__text" id="colleague-weaknesses">…</p>
+            <ul class="block__list" id="colleague-weaknesses"></ul>
           </div>
         </div>
         <div class="block">
           <div class="block__label">РЕКОМЕНДАЦИИ</div>
-          <p class="block__text" id="colleague-recommendations">…</p>
+          <ul class="block__list" id="colleague-recommendations"></ul>
         </div>
       </div>
 
       <button class="btn btn--primary btn--share" onclick="goToSwiper()">
-        <i class="ti ti-share" aria-hidden="true"></i>Поделиться карточкой
+        <svg class="btn__icon" aria-hidden="true"><use href="#icon-share"/></svg>Поделиться карточкой
       </button>
     </div>
   </section>
@@ -140,12 +201,19 @@
     <div class="screen__inner">
       <div class="swiper-header">
         <button class="back-btn" onclick="goToResult()" aria-label="Назад">
-          <i class="ti ti-arrow-left" aria-hidden="true"></i>
+          <svg aria-hidden="true"><use href="#icon-arrow-left"/></svg>
         </button>
         <h2 class="title-section title-no-mb">Выберите карточку</h2>
       </div>
-      <div class="hint">Свайпните влево или вправо</div>
-      <div class="swiper" id="swiper">
+      <div class="hint">Свайпните или нажмите на стрелки</div>
+      <div class="swiper-wrap">
+        <button class="swiper-arrow swiper-arrow--prev" onclick="prevCard()" aria-label="Назад">
+          <svg aria-hidden="true"><use href="#icon-chevron-left"/></svg>
+        </button>
+        <div class="swiper" id="swiper"></div>
+        <button class="swiper-arrow swiper-arrow--next" onclick="nextCard()" aria-label="Вперёд">
+          <svg aria-hidden="true"><use href="#icon-chevron-right"/></svg>
+        </button>
       </div>
       <div class="dots" id="dots"></div>
       <div class="swiper-actions">
