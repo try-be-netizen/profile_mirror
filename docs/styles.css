@@ -20,7 +20,7 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
-  margin: 0; padding: 0; height: 100%;
+  margin: 0; padding: 0;
   background: var(--bg);
   font-family: var(--font-sans);
   font-size: 14px;
@@ -30,18 +30,54 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-#app { min-height: 100vh; display: flex; flex-direction: column; }
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
 
-.screen { display: none; flex: 1; flex-direction: column; animation: screenFadeIn 0.4s ease-out; }
+#app {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  animation: screenFadeIn 0.4s ease-out;
+}
 .screen.active { display: flex; }
-.screen__inner {
-  padding: 28px 24px;
+
+/* Body — основной контент экрана */
+.screen__body {
+  padding: 28px 24px 16px;
   display: flex;
   flex-direction: column;
   flex: 1;
   max-width: 480px;
   margin: 0 auto;
   width: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.screen__body--center { justify-content: center; }
+.screen__body--scroll {
+  /* На результате есть отдельный скролл */
+}
+
+/* CTA — фиксированный нижний блок */
+.screen__cta {
+  padding: 12px 24px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+  background: var(--bg);
+  border-top: 0.5px solid var(--border-light);
+  flex-shrink: 0;
 }
 
 @keyframes screenFadeIn {
@@ -50,10 +86,6 @@ html, body {
 }
 
 /* === СТАРТОВЫЙ ЭКРАН === */
-.screen--start .screen__inner {
-  justify-content: space-between;
-  min-height: 100vh;
-}
 .bot-tag {
   font-size: 10px;
   color: var(--accent);
@@ -106,7 +138,7 @@ html, body {
   to { width: 32px; opacity: 1; }
 }
 
-/* Превью на старте — два бабла */
+/* Два бабла на стартовом */
 .bubbles {
   margin-top: 32px;
   display: flex;
@@ -134,11 +166,7 @@ html, body {
   align-items: center;
   justify-content: center;
 }
-.bubble__icon {
-  width: 14px;
-  height: 14px;
-  color: var(--accent);
-}
+.bubble__icon { width: 14px; height: 14px; color: var(--accent); }
 .bubble__icon--muted { color: var(--text-muted); }
 .bubble__content {
   flex: 1;
@@ -205,9 +233,8 @@ html, body {
   color: var(--accent);
   border: 0.5px solid var(--accent);
 }
-.btn--share { margin-top: 24px; }
 .btn__icon { width: 16px; height: 16px; }
-.screen--start .btn { margin-bottom: 14px; }
+.screen--start .screen__cta .btn { margin-bottom: 14px; }
 
 .textarea {
   flex: 1;
@@ -218,16 +245,14 @@ html, body {
   font-family: var(--font-sans);
   font-size: 13px;
   color: var(--text);
-  min-height: 220px;
-  resize: vertical;
-  margin-bottom: 16px;
+  min-height: 180px;
+  resize: none;
   transition: border-color 0.2s;
 }
 .textarea::placeholder { color: var(--text-disabled); }
 .textarea:focus { outline: none; border-color: var(--accent); }
 
-/* === ОБРАБОТКА (НОВАЯ АНИМАЦИЯ) === */
-.screen--processing .screen__inner { justify-content: center; }
+/* === ОБРАБОТКА === */
 .progress {
   position: relative;
   padding-left: 20px;
@@ -297,9 +322,7 @@ html, body {
   border-color: var(--accent);
   background: var(--accent);
 }
-.progress__step.is-done .progress__label {
-  color: var(--text-secondary);
-}
+.progress__step.is-done .progress__label { color: var(--text-secondary); }
 
 @keyframes markerPulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(107, 93, 211, 0.4); }
@@ -316,6 +339,11 @@ html, body {
   gap: 24px;
   margin-bottom: 22px;
   border-bottom: 0.5px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 2;
+  padding-top: 4px;
 }
 .tab {
   background: none;
@@ -333,18 +361,14 @@ html, body {
   margin-bottom: -0.5px;
   transition: color 0.2s, border-color 0.2s;
 }
-.tab__icon {
-  width: 18px;
-  height: 18px;
-  color: var(--text-muted);
-  transition: color 0.2s;
-}
+.tab__icon { width: 18px; height: 18px; color: var(--text-muted); transition: color 0.2s; }
 .tab--active { color: var(--text); border-bottom-color: var(--accent); }
 .tab--active .tab__icon { color: var(--accent); }
 
 .result-content { flex: 1; }
 .block { margin-bottom: 22px; }
 .block:last-child { margin-bottom: 0; }
+.block[hidden] { display: none; }
 .block--row { display: flex; gap: 10px; align-items: flex-start; }
 .block__col { flex: 1; }
 .block__icon {
@@ -355,6 +379,7 @@ html, body {
 }
 .block__icon--green { color: var(--positive); }
 .block__icon--red { color: var(--negative); }
+.block__icon--purple { color: var(--accent); }
 .block__label {
   font-size: 9px;
   color: var(--text-muted);
@@ -421,12 +446,16 @@ html, body {
 .swiper-wrap {
   position: relative;
   margin: 14px 0 12px;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 .swiper {
   overflow: hidden;
   border-radius: 12px;
   touch-action: pan-y;
   cursor: grab;
+  width: 100%;
 }
 .swiper:active { cursor: grabbing; }
 .swiper__track {
@@ -463,56 +492,60 @@ html, body {
   .swiper-arrow--next { right: 4px; }
 }
 
+/* === КАРТОЧКА: БЕЛАЯ + ЛАВАНДОВЫЙ АКЦЕНТ === */
 .share-card {
   flex-shrink: 0;
   width: 100%;
-  background: var(--accent);
+  background: #FFFFFF;
+  border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 24px 22px;
-  min-height: 380px;
+  padding: 26px 24px;
+  min-height: 340px;
   display: flex;
   flex-direction: column;
-  color: white;
+  color: var(--text);
 }
 .share-card__brand {
   font-family: var(--font-serif);
   font-size: 13px;
-  color: white;
+  color: var(--accent);
   margin-bottom: 22px;
   font-weight: 500;
 }
 .share-card__block {
-  background: rgba(255,255,255,0.12);
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  padding: 14px 0;
+  border-top: 0.5px solid var(--border-light);
 }
+.share-card__block:first-of-type { border-top: none; padding-top: 0; }
 .share-card__role {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-bottom: 8px;
 }
-.share-card__role svg { width: 12px; height: 12px; color: white; }
+.share-card__role svg { width: 12px; height: 12px; color: var(--accent); }
+.share-card__role-icon--muted { color: var(--text-muted) !important; }
 .share-card__role-name {
   font-size: 9px;
   letter-spacing: 2px;
-  color: rgba(255,255,255,0.85);
+  color: var(--accent);
   font-weight: 500;
 }
+.share-card__role-name--muted { color: var(--text-muted); }
 .share-card__role--badge {
   display: inline-flex;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .share-card__role--badge.green { background: var(--positive); }
 .share-card__role--badge.red { background: var(--negative); }
+.share-card__role--badge .share-card__role-name { color: white; }
 .share-card__quote {
   font-family: var(--font-serif);
   font-size: 13px;
   line-height: 1.5;
-  color: white;
+  color: var(--text);
   margin: 0;
 }
 .share-card__quote--big {
@@ -520,14 +553,14 @@ html, body {
   line-height: 1.45;
   flex: 1;
   margin-top: 4px;
+  color: var(--text);
 }
-.share-card__footer { margin-top: auto; padding-top: 18px; }
-.share-card__divider {
-  width: 24px;
-  height: 1px;
-  background: rgba(255,255,255,0.4);
-  margin-bottom: 12px;
+.share-card__footer {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 0.5px solid var(--border-light);
 }
+.share-card__divider { display: none; }
 .share-card__attribution {
   display: flex;
   justify-content: space-between;
@@ -535,18 +568,18 @@ html, body {
 }
 .share-card__name {
   font-size: 10px;
-  color: white;
+  color: var(--text);
   font-weight: 500;
   line-height: 1.4;
 }
-.share-card__role-line { color: rgba(255,255,255,0.7); font-weight: 400; }
-.share-card__bot { font-size: 9px; color: rgba(255,255,255,0.7); }
+.share-card__role-line { color: var(--text-muted); font-weight: 400; }
+.share-card__bot { font-size: 9px; color: var(--accent); font-weight: 500; }
 
 .dots {
   display: flex;
   gap: 6px;
   justify-content: center;
-  margin: 6px 0 16px;
+  margin: 6px 0 0;
 }
 .dot {
   width: 6px;
@@ -559,8 +592,19 @@ html, body {
   background: var(--accent);
   transform: scale(1.3);
 }
-.swiper-actions { display: flex; gap: 8px; }
-.swiper-actions .btn { flex: 1; }
+
+/* Кнопки шеринга — иконка + текст, не растянутые */
+.swiper-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.swiper-actions .btn {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 140px;
+  padding: 12px 20px;
+}
 
 @media (prefers-color-scheme: dark) {
   :root {
