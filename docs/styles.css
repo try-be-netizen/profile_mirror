@@ -237,7 +237,6 @@ html, body {
 .screen--start .screen__cta .btn { margin-bottom: 14px; }
 
 .textarea {
-  flex: 1;
   background: var(--bg-soft);
   border: 0.5px solid var(--border);
   border-radius: var(--radius-md);
@@ -245,7 +244,7 @@ html, body {
   font-family: var(--font-sans);
   font-size: 13px;
   color: var(--text);
-  min-height: 180px;
+  height: 220px;
   resize: none;
   transition: border-color 0.2s;
 }
