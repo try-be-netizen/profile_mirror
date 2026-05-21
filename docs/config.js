@@ -1,3 +1,3 @@
 window.PROFILE_MIRROR_CONFIG = {
-  botApi: 'https://YOUR-VM-DOMAIN-HERE',
+  botApi: 'https://publishers-advantages-prostate-organizational.trycloudflare.com',
 };
