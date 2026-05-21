@@ -67,20 +67,24 @@
         <div class="accent-bar"></div>
         <p class="lead">Покажу, как читается ваш профиль со стороны — глазами рекрутера и случайного коллеги.</p>
 
-        <div class="preview-card">
-          <div class="preview-card__lenses">
-            <div class="preview-lens">
-              <svg class="preview-lens__icon" aria-hidden="true"><use href="#icon-recruiter"/></svg>
-              <span class="preview-lens__label">Рекрутер</span>
+        <div class="bubbles">
+          <div class="bubble">
+            <div class="bubble__icon-wrap">
+              <svg class="bubble__icon" aria-hidden="true"><use href="#icon-recruiter"/></svg>
             </div>
-            <div class="preview-lens">
-              <svg class="preview-lens__icon preview-lens__icon--muted" aria-hidden="true"><use href="#icon-colleague"/></svg>
-              <span class="preview-lens__label">Коллега</span>
+            <div class="bubble__content">
+              <div class="bubble__label bubble__label--recruiter">РЕКРУТЕР</div>
+              <p class="bubble__quote" id="bubble-recruiter">Специфичный опыт. Подойдёт для AI-ролей.</p>
             </div>
           </div>
-          <div class="preview-quote">
-            <div class="preview-quote__mark">«</div>
-            <p class="preview-quote__text" id="preview-quote-text">Специфичный опыт, но видно — доводит до запуска.</p>
+          <div class="bubble">
+            <div class="bubble__icon-wrap">
+              <svg class="bubble__icon bubble__icon--muted" aria-hidden="true"><use href="#icon-colleague"/></svg>
+            </div>
+            <div class="bubble__content">
+              <div class="bubble__label bubble__label--colleague">КОЛЛЕГА</div>
+              <p class="bubble__quote" id="bubble-colleague">5 лет в Яндексе и свой проект — как успевает?</p>
+            </div>
           </div>
         </div>
       </div>
