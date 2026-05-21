@@ -105,7 +105,7 @@ async def handle_send_card(request: web.Request) -> web.Response:
         await bot.send_photo(
             chat_id=user_id,
             photo=io.BytesIO(png_bytes),
-            caption="Ваше зеркало 🪞\n\nПоделитесь карточкой в LinkedIn или сохраните себе.",
+            caption="Готово ✨\n\nПоделитесь карточкой в LinkedIn или сохраните себе.",
         )
     except Exception:
         logger.exception("Не получилось отправить карточку в чат")
