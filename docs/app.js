@@ -13,7 +13,8 @@ let state = {
   currentCardIndex: 0,
   totalCards: 5,
   processingTimer: null,
-  previewRotationTimer: null,
+  bubbleIntervals: [],
+  bubbleTimeouts: [],
 };
 
 const RECRUITER_QUOTES = [
@@ -33,7 +34,7 @@ const COLLEAGUE_QUOTES = [
 
 function rotateBubble(elId, quotes, intervalMs, startDelay) {
   const el = document.getElementById(elId);
-  if (!el) return null;
+  if (!el) return;
   let i = 0;
   const timeoutId = setTimeout(() => {
     const intervalId = setInterval(() => {
@@ -50,24 +51,22 @@ function rotateBubble(elId, quotes, intervalMs, startDelay) {
 }
 
 function startPreviewRotation() {
-  state.bubbleIntervals = [];
-  state.bubbleTimeouts = [];
   rotateBubble('bubble-recruiter', RECRUITER_QUOTES, 3800, 1500);
   rotateBubble('bubble-colleague', COLLEAGUE_QUOTES, 4900, 3200);
 }
 
 function stopPreviewRotation() {
-  (state.bubbleIntervals || []).forEach(id => clearInterval(id));
-  (state.bubbleTimeouts || []).forEach(id => clearTimeout(id));
+  state.bubbleIntervals.forEach(id => clearInterval(id));
+  state.bubbleTimeouts.forEach(id => clearTimeout(id));
   state.bubbleIntervals = [];
   state.bubbleTimeouts = [];
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const recruiterBubble = document.getElementById('bubble-recruiter');
-  const colleagueBubble = document.getElementById('bubble-colleague');
-  if (recruiterBubble) recruiterBubble.style.transition = 'opacity 0.3s ease-out';
-  if (colleagueBubble) colleagueBubble.style.transition = 'opacity 0.3s ease-out';
+  const r = document.getElementById('bubble-recruiter');
+  const c = document.getElementById('bubble-colleague');
+  if (r) r.style.transition = 'opacity 0.3s ease-out';
+  if (c) c.style.transition = 'opacity 0.3s ease-out';
   startPreviewRotation();
 });
 
@@ -120,10 +119,8 @@ function animateProgress() {
   const fill = document.getElementById('progress-fill');
   steps.forEach(s => s.classList.remove('is-active', 'is-done'));
   fill.style.height = '0%';
-
   steps[0].classList.add('is-active');
   fill.style.height = '12%';
-
   let i = 0;
   state.processingTimer = setInterval(() => {
     if (i >= steps.length - 1) {
@@ -155,26 +152,49 @@ async function callBot(profileText) {
   return await response.json();
 }
 
-function renderResult() {
-  const { recruiter, colleague } = state.result;
-  document.getElementById('recruiter-overview').textContent = recruiter.overview;
-  renderList('recruiter-strengths', recruiter.strengths);
-  renderList('recruiter-weaknesses', recruiter.weaknesses);
-  renderList('recruiter-recommendations', recruiter.recommendations);
-  document.getElementById('colleague-overview').textContent = colleague.overview;
-  renderList('colleague-strengths', colleague.strengths);
-  renderList('colleague-weaknesses', colleague.weaknesses);
-  renderList('colleague-recommendations', colleague.recommendations);
+function isNonEmpty(val) {
+  if (!val) return false;
+  if (typeof val === 'string') return val.trim().length > 0 && val.trim() !== '—';
+  if (Array.isArray(val)) return val.filter(v => isNonEmpty(v)).length > 0;
+  return true;
 }
 
-function renderList(elId, items) {
+function setBlockText(elId, text, blockSelector) {
   const el = document.getElementById(elId);
   if (!el) return;
-  if (!items || !items.length) {
-    el.innerHTML = '<li>—</li>';
+  const block = blockSelector ? document.querySelector(blockSelector) : el.closest('.block');
+  if (isNonEmpty(text)) {
+    el.textContent = text;
+    if (block) block.hidden = false;
+  } else {
+    if (block) block.hidden = true;
+  }
+}
+
+function setBlockList(elId, items) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  const block = el.closest('.block');
+  if (!isNonEmpty(items)) {
+    if (block) block.hidden = true;
     return;
   }
-  el.innerHTML = items.map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  if (block) block.hidden = false;
+  el.innerHTML = items.filter(isNonEmpty).map(item => `<li>${escapeHtml(item)}</li>`).join('');
+}
+
+function renderResult() {
+  const { recruiter, colleague } = state.result;
+  // Рекрутер
+  setBlockText('recruiter-overview', recruiter.overview);
+  setBlockList('recruiter-strengths', recruiter.strengths);
+  setBlockList('recruiter-weaknesses', recruiter.weaknesses);
+  setBlockList('recruiter-recommendations', recruiter.recommendations);
+  // Коллега
+  setBlockText('colleague-overview', colleague.overview);
+  setBlockList('colleague-strengths', colleague.strengths);
+  setBlockList('colleague-weaknesses', colleague.weaknesses);
+  setBlockList('colleague-observations', colleague.observations);
 }
 
 function switchTab(tabName) {
@@ -182,6 +202,9 @@ function switchTab(tabName) {
   document.querySelector(`.tab[data-tab="${tabName}"]`).classList.add('tab--active');
   document.getElementById('result-recruiter').hidden = tabName !== 'recruiter';
   document.getElementById('result-colleague').hidden = tabName !== 'colleague';
+  // прокрутить наверх
+  const body = document.querySelector('#screen-result .screen__body');
+  if (body) body.scrollTop = 0;
 }
 
 function goToResult() { showScreen('screen-result'); }
@@ -217,26 +240,28 @@ function firstItem(arr) {
   return arr[0];
 }
 
+const ICON_RECRUITER_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M21 21l-6-6"/><path d="M10 8v4M8 10h4"/></svg>';
+const ICON_COLLEAGUE_SVG = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c.83.642 2.077 1.017 3.5 1.017s2.67-.375 3.5-1.017c.83-.642 2.077-1.017 3.5-1.017s2.67.375 3.5 1.017"/><path d="M8 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M12 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M3 10h14v5a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v-5z"/><path d="M16.746 16.726a3 3 0 1 0 .252-5.555"/></svg>';
+
 function buildPosterCard(recruiter, colleague, name) {
   return `
     <div class="share-card" data-card-type="poster">
       <div class="share-card__brand">LinkedIn глазами других</div>
       <div class="share-card__block">
         <div class="share-card__role">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M21 21l-6-6"/><path d="M10 8v4M8 10h4"/></svg>
+          ${ICON_RECRUITER_SVG}
           <span class="share-card__role-name">РЕКРУТЕР</span>
         </div>
-        <p class="share-card__quote">${escapeHtml(recruiter.overview)}</p>
+        <p class="share-card__quote">${escapeHtml(recruiter.overview || '')}</p>
       </div>
       <div class="share-card__block">
         <div class="share-card__role">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c.83.642 2.077 1.017 3.5 1.017s2.67-.375 3.5-1.017c.83-.642 2.077-1.017 3.5-1.017s2.67.375 3.5 1.017"/><path d="M8 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M12 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M3 10h14v5a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v-5z"/><path d="M16.746 16.726a3 3 0 1 0 .252-5.555"/></svg>
-          <span class="share-card__role-name">КОЛЛЕГА</span>
+          <span style="color: var(--text-muted);">${ICON_COLLEAGUE_SVG}</span>
+          <span class="share-card__role-name share-card__role-name--muted">КОЛЛЕГА</span>
         </div>
-        <p class="share-card__quote">${escapeHtml(colleague.overview)}</p>
+        <p class="share-card__quote">${escapeHtml(colleague.overview || '')}</p>
       </div>
       <div class="share-card__footer">
-        <div class="share-card__divider"></div>
         <div class="share-card__attribution">
           <div class="share-card__name">${escapeHtml(name)}<br><span class="share-card__role-line">по профилю в LinkedIn</span></div>
           <div class="share-card__bot">@profile_mirror_bot</div>
@@ -247,19 +272,18 @@ function buildPosterCard(recruiter, colleague, name) {
 }
 
 function buildRoleCard(role, text, name) {
-  const iconSvg = role === 'recruiter'
-    ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="6"/><path d="M21 21l-6-6"/><path d="M10 8v4M8 10h4"/></svg>'
-    : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c.83.642 2.077 1.017 3.5 1.017s2.67-.375 3.5-1.017c.83-.642 2.077-1.017 3.5-1.017s2.67.375 3.5 1.017"/><path d="M8 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M12 3a2.4 2.4 0 0 0-1 2 2.4 2.4 0 0 0 1 2"/><path d="M3 10h14v5a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6v-5z"/><path d="M16.746 16.726a3 3 0 1 0 .252-5.555"/></svg>';
+  const iconSvg = role === 'recruiter' ? ICON_RECRUITER_SVG : ICON_COLLEAGUE_SVG;
   const label = role === 'recruiter' ? 'ВЗГЛЯД РЕКРУТЕРА' : 'ВЗГЛЯД КОЛЛЕГИ';
+  const iconStyle = role === 'colleague' ? 'color: var(--text-muted);' : '';
+  const labelClass = role === 'colleague' ? ' share-card__role-name--muted' : '';
   return `
     <div class="share-card" data-card-type="${role}">
       <div class="share-card__role" style="margin-bottom: 22px;">
-        ${iconSvg}
-        <span class="share-card__role-name">${label}</span>
+        <span style="${iconStyle}">${iconSvg}</span>
+        <span class="share-card__role-name${labelClass}">${label}</span>
       </div>
-      <p class="share-card__quote share-card__quote--big">«${escapeHtml(text)}»</p>
+      <p class="share-card__quote share-card__quote--big">«${escapeHtml(text || '')}»</p>
       <div class="share-card__footer">
-        <div class="share-card__divider"></div>
         <div class="share-card__attribution">
           <div class="share-card__name">${escapeHtml(name)}<br><span class="share-card__role-line">по профилю в LinkedIn</span></div>
           <div class="share-card__bot">@profile_mirror_bot</div>
@@ -277,9 +301,8 @@ function buildBadgeCard(kind, text, name) {
       <div class="share-card__role--badge ${cls}">
         <span class="share-card__role-name">${badge}</span>
       </div>
-      <p class="share-card__quote share-card__quote--big">«${escapeHtml(text)}»</p>
+      <p class="share-card__quote share-card__quote--big">«${escapeHtml(text || '')}»</p>
       <div class="share-card__footer">
-        <div class="share-card__divider"></div>
         <div class="share-card__attribution">
           <div class="share-card__name">${escapeHtml(name)}<br><span class="share-card__role-line">по профилю в LinkedIn</span></div>
           <div class="share-card__bot">@profile_mirror_bot</div>
@@ -327,23 +350,13 @@ function attachSwipeHandlers() {
   let currentX = 0;
   let isDragging = false;
 
-  const onStart = (clientX) => {
-    startX = clientX;
-    currentX = clientX;
-    isDragging = true;
-  };
-  const onMove = (clientX) => {
-    if (!isDragging) return;
-    currentX = clientX;
-  };
+  const onStart = (clientX) => { startX = clientX; currentX = clientX; isDragging = true; };
+  const onMove = (clientX) => { if (isDragging) currentX = clientX; };
   const onEnd = () => {
     if (!isDragging) return;
     isDragging = false;
     const dx = currentX - startX;
-    if (Math.abs(dx) > 50) {
-      if (dx < 0) nextCard();
-      else if (dx > 0) prevCard();
-    }
+    if (Math.abs(dx) > 50) { if (dx < 0) nextCard(); else if (dx > 0) prevCard(); }
   };
 
   swiper.addEventListener('touchstart', e => onStart(e.touches[0].clientX), { passive: true });
@@ -367,7 +380,7 @@ async function renderCurrentCardToImage() {
   renderArea.innerHTML = '';
   renderArea.appendChild(clone);
   const canvas = await html2canvas(clone, {
-    backgroundColor: null,
+    backgroundColor: '#FFFFFF',
     scale: 2,
     useCORS: true,
   });
