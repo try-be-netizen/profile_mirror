@@ -239,6 +239,7 @@ html, body {
 }
 .btn__icon { width: 16px; height: 16px; }
 .screen--start .screen__cta .hint { margin-top: 10px; }
+.screen--input .screen__cta .hint { margin-top: 10px; }
 
 .textarea {
   flex: 1;
