@@ -27,17 +27,22 @@ PROXY_URL = os.environ.get("TELEGRAM_PROXY")
 
 
 WELCOME_TEXT = (
-    "👋 Привет!\n\n"
-    "Я покажу, как читается ваш LinkedIn-профиль со стороны — "
-    "глазами рекрутера и случайного коллеги.\n\n"
-    "Нажмите на кнопку ниже, чтобы открыть зеркало."
+    "Привет.\n\n"
+    "Это маленький эксперимент: что если показать тебе, "
+    "как читается твой LinkedIn со стороны?\n\n"
+    "Внутри — два независимых взгляда: рекрутера и случайного коллеги. "
+    "Без оценок «хорошо/плохо» и без советов карьерного консультанта. "
+    "Просто живая реакция на твой профиль.\n\n"
+    "Сделала Ксения Белоусова, PM из Yandex Alice. "
+    "Это часть pet-проекта про то, как читаются профили.\n\n"
+    "Нажмите на кнопку ниже, чтобы начать."
 )
 
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     keyboard = InlineKeyboardMarkup([
         [InlineKeyboardButton(
-            text="🪞 Открыть зеркало",
+            text="Открыть приложение",
             web_app=WebAppInfo(url=MINI_APP_URL),
         )]
     ])
@@ -50,7 +55,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
-        "Просто нажмите /start и откройте зеркало.\n\n"
+        "Просто нажмите /start и откройте приложение.\n\n"
         "Внутри — вставьте свой профиль с LinkedIn, и через 10 секунд я покажу, "
         "как он выглядит со стороны."
     )
@@ -73,7 +78,7 @@ async def run_http_server(bot, port: int) -> None:
 async def main_async() -> None:
     builder = Application.builder().token(TELEGRAM_BOT_TOKEN)
     if PROXY_URL:
-        logger.info("Использую прокси для Telegram: %s", PROXY_URL)
+        logger.info("Использую прокси для Telegram")
         builder = builder.get_updates_proxy(PROXY_URL).proxy(PROXY_URL)
     application = builder.build()
 
