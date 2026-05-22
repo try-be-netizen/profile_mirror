@@ -11,7 +11,7 @@ let state = {
   result: null,
   userInfo: null,
   currentCardIndex: 0,
-  totalCards: 5,
+  totalCards: 3,
   processingTimer: null,
   bubbleIntervals: [],
   bubbleTimeouts: [],
@@ -330,8 +330,6 @@ function buildCards() {
     buildPosterCard(recruiter, colleague, name),
     buildRoleCard('recruiter', recruiter.overview, name),
     buildRoleCard('colleague', colleague.overview, name),
-    buildBadgeCard('strong', firstItem(recruiter.strengths) || '—', name),
-    buildBadgeCard('weak', firstItem(recruiter.weaknesses) || '—', name),
   ];
   state.totalCards = cards.length;
   swiper.innerHTML = `<div class="swiper__track" id="swiper-track">${cards.join('')}</div>`;
@@ -386,25 +384,6 @@ function buildRoleCard(role, text, name) {
       <div class="share-card__role" style="margin-bottom: 22px;">
         <span style="${iconStyle}">${iconSvg}</span>
         <span class="share-card__role-name${labelClass}">${label}</span>
-      </div>
-      <p class="share-card__quote share-card__quote--big">«${escapeHtml(text || '')}»</p>
-      <div class="share-card__footer">
-        <div class="share-card__attribution">
-          <div class="share-card__name">${escapeHtml(name)}<br><span class="share-card__role-line">по профилю в LinkedIn</span></div>
-          <div class="share-card__bot">@profile_mirror_bot</div>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function buildBadgeCard(kind, text, name) {
-  const badge = kind === 'strong' ? '+ СИЛЬНОЕ' : '− СЛАБОЕ';
-  const cls = kind === 'strong' ? 'green' : 'red';
-  return `
-    <div class="share-card" data-card-type="${kind}">
-      <div class="share-card__role--badge ${cls}">
-        <span class="share-card__role-name">${badge}</span>
       </div>
       <p class="share-card__quote share-card__quote--big">«${escapeHtml(text || '')}»</p>
       <div class="share-card__footer">
@@ -485,7 +464,7 @@ async function renderCurrentCardToImage() {
   renderArea.innerHTML = '';
   renderArea.appendChild(clone);
   const canvas = await html2canvas(clone, {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: null,
     scale: 2,
     useCORS: true,
   });
