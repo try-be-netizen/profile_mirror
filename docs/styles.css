@@ -608,28 +608,38 @@ html, body {
 }
 
 /* === КАРТОЧКА: БЕЛАЯ + ЛАВАНДОВЫЙ АКЦЕНТ === */
+/* Карточка всегда светлая — независимо от темы устройства.
+   Форсим локальные переменные, чтобы dark theme не утекала внутрь. */
 .share-card {
+  --card-bg: #FFFFFF;
+  --card-text: #1C1C1A;
+  --card-text-secondary: #5C5A52;
+  --card-text-muted: #8A857A;
+  --card-border: #E8E5DE;
+  --card-border-light: #F0EDE5;
+  --card-accent: #6B5DD3;
+
   flex-shrink: 0;
   width: 100%;
-  background: #FFFFFF;
-  border: 1px solid var(--border);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
   padding: 26px 24px;
   min-height: 340px;
   display: flex;
   flex-direction: column;
-  color: var(--text);
+  color: var(--card-text);
 }
 .share-card__brand {
   font-family: var(--font-serif);
   font-size: 13px;
-  color: var(--accent);
+  color: var(--card-accent);
   margin-bottom: 22px;
   font-weight: 500;
 }
 .share-card__block {
   padding: 14px 0;
-  border-top: 0.5px solid var(--border-light);
+  border-top: 0.5px solid var(--card-border-light);
 }
 .share-card__block:first-of-type { border-top: none; padding-top: 0; }
 .share-card__role {
@@ -638,15 +648,15 @@ html, body {
   gap: 6px;
   margin-bottom: 8px;
 }
-.share-card__role svg { width: 12px; height: 12px; color: var(--accent); }
-.share-card__role-icon--muted { color: var(--text-muted) !important; }
+.share-card__role svg { width: 12px; height: 12px; color: var(--card-accent); }
+.share-card__role-icon--muted { color: var(--card-text-muted) !important; }
 .share-card__role-name {
   font-size: 9px;
   letter-spacing: 2px;
-  color: var(--accent);
+  color: var(--card-accent);
   font-weight: 500;
 }
-.share-card__role-name--muted { color: var(--text-muted); }
+.share-card__role-name--muted { color: var(--card-text-muted); }
 .share-card__role--badge {
   display: inline-flex;
   padding: 4px 10px;
@@ -660,7 +670,7 @@ html, body {
   font-family: var(--font-serif);
   font-size: 13px;
   line-height: 1.5;
-  color: var(--text);
+  color: var(--card-text);
   margin: 0;
 }
 .share-card__quote--big {
@@ -668,12 +678,12 @@ html, body {
   line-height: 1.45;
   flex: 1;
   margin-top: 4px;
-  color: var(--text);
+  color: var(--card-text);
 }
 .share-card__footer {
   margin-top: auto;
   padding-top: 18px;
-  border-top: 0.5px solid var(--border-light);
+  border-top: 0.5px solid var(--card-border-light);
 }
 .share-card__divider { display: none; }
 .share-card__attribution {
@@ -683,13 +693,12 @@ html, body {
 }
 .share-card__name {
   font-size: 10px;
-  color: var(--text);
+  color: var(--card-text);
   font-weight: 500;
   line-height: 1.4;
 }
-.share-card__role-line { color: var(--text-muted); font-weight: 400; }
-.share-card__bot { font-size: 9px; color: var(--accent); font-weight: 500; }
-
+.share-card__role-line { color: var(--card-text-muted); font-weight: 400; }
+.share-card__bot { font-size: 9px; color: var(--card-accent); font-weight: 500; }
 .dots {
   display: flex;
   gap: 6px;
