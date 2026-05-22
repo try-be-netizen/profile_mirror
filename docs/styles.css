@@ -257,6 +257,116 @@ html, body {
 .textarea::placeholder { color: var(--text-disabled); }
 .textarea:focus { outline: none; border-color: var(--accent); }
 
+/* Toggle Текстом / Скриншотами */
+.input-toggle {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-soft);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: 14px;
+}
+.input-toggle__btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 9px 12px;
+  border-radius: 7px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.input-toggle__btn--active {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.input-mode {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.input-mode[hidden] { display: none; }
+
+/* Dropzone для картинок */
+.dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-soft);
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 32px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 180px;
+}
+.dropzone:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.dropzone__icon {
+  width: 32px;
+  height: 32px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.dropzone__text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.dropzone__hint {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.image-previews {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.image-preview {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--bg-soft);
+  border: 0.5px solid var(--border);
+}
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.image-preview__remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0,0,0,0.6);
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+}
+.image-preview__remove:hover { background: rgba(0,0,0,0.8); }
+
 /* === ОБРАБОТКА === */
 .progress {
   position: relative;
