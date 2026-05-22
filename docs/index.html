@@ -105,8 +105,30 @@
   <section class="screen screen--input" id="screen-input">
     <div class="screen__body">
       <h2 class="title-section">Покажите профиль</h2>
-      <p class="lead-sm">Откройте свой LinkedIn, выделите всё (Cmd+A → Cmd+C) и вставьте сюда.</p>
-      <textarea id="profile-input" class="textarea" placeholder="Вставьте текст здесь…"></textarea>
+      <p class="lead-sm">Откройте свой LinkedIn, выделите всё (Cmd+A → Cmd+C) и вставьте сюда. Или загрузите скриншоты.</p>
+
+      <div class="input-toggle">
+        <button class="input-toggle__btn input-toggle__btn--active" data-mode="text" onclick="switchInputMode('text')">Текстом</button>
+        <button class="input-toggle__btn" data-mode="images" onclick="switchInputMode('images')">Скриншотами</button>
+      </div>
+
+      <div class="input-mode" id="input-mode-text">
+        <textarea id="profile-input" class="textarea" placeholder="Вставьте текст здесь…"></textarea>
+      </div>
+
+      <div class="input-mode" id="input-mode-images" hidden>
+        <label class="dropzone" for="image-input">
+          <svg class="dropzone__icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7"/>
+            <path d="M16 6l-4-4-4 4"/>
+            <path d="M12 2v13"/>
+          </svg>
+          <div class="dropzone__text">Загрузите 1–5 скриншотов</div>
+          <div class="dropzone__hint">JPG или PNG, до 10 МБ каждый</div>
+          <input type="file" id="image-input" accept="image/*" multiple style="display: none;" onchange="handleImageSelect(event)">
+        </label>
+        <div class="image-previews" id="image-previews"></div>
+      </div>
     </div>
     <div class="screen__cta">
       <button class="btn btn--primary" onclick="goToProcessing()">Разобрать профиль</button>
