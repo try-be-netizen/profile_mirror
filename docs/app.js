@@ -15,6 +15,8 @@ let state = {
   processingTimer: null,
   bubbleIntervals: [],
   bubbleTimeouts: [],
+  inputMode: 'text',
+  selectedImages: [],
 };
 
 const RECRUITER_QUOTES = [
@@ -92,25 +94,129 @@ function goToInput() {
   showScreen('screen-input');
 }
 
+function switchInputMode(mode) {
+  state.inputMode = mode;
+  document.querySelectorAll('.input-toggle__btn').forEach(b => {
+    b.classList.toggle('input-toggle__btn--active', b.dataset.mode === mode);
+  });
+  document.getElementById('input-mode-text').hidden = mode !== 'text';
+  document.getElementById('input-mode-images').hidden = mode !== 'images';
+}
+
+async function handleImageSelect(event) {
+  const files = Array.from(event.target.files || []);
+  if (!files.length) return;
+  const room = 5 - state.selectedImages.length;
+  const toProcess = files.slice(0, room);
+  for (const file of toProcess) {
+    try {
+      const compressed = await compressImage(file);
+      state.selectedImages.push(compressed);
+    } catch (err) {
+      console.error('Не удалось обработать картинку', err);
+    }
+  }
+  renderImagePreviews();
+  event.target.value = '';
+}
+
+function compressImage(file, maxDim = 1600, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('read_error'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('image_error'));
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderImagePreviews() {
+  const container = document.getElementById('image-previews');
+  if (!container) return;
+  container.innerHTML = state.selectedImages.map((dataUrl, i) => `
+    <div class="image-preview">
+      <img src="${dataUrl}" alt="Скрин ${i + 1}">
+      <button class="image-preview__remove" onclick="removeImage(${i})" aria-label="Удалить">×</button>
+    </div>
+  `).join('');
+}
+
+function removeImage(index) {
+  state.selectedImages.splice(index, 1);
+  renderImagePreviews();
+}
+
 async function goToProcessing() {
-  const text = document.getElementById('profile-input').value.trim();
-  if (text.length < 50) {
-    alert('Пожалуйста, вставьте больше текста — хотя бы 50 символов.');
-    return;
+  if (state.inputMode === 'text') {
+    const text = document.getElementById('profile-input').value.trim();
+    if (text.length < 50) {
+      alert('Пожалуйста, вставьте больше текста — хотя бы 50 символов.');
+      return;
+    }
+    state.profileText = text;
+    showScreen('screen-processing');
+    animateProgress();
+    try {
+      const result = await callBot(text);
+      state.result = result;
+      renderResult();
+      setTimeout(() => showScreen('screen-result'), 600);
+    } catch (err) {
+      console.error(err);
+      alert('Что-то пошло не так. Попробуйте ещё раз через минуту.');
+      showScreen('screen-input');
+    }
+  } else {
+    if (state.selectedImages.length === 0) {
+      alert('Загрузите хотя бы один скриншот.');
+      return;
+    }
+    showScreen('screen-processing');
+    animateProgress();
+    try {
+      const result = await callBotWithImages(state.selectedImages);
+      state.result = result;
+      renderResult();
+      setTimeout(() => showScreen('screen-result'), 600);
+    } catch (err) {
+      console.error(err);
+      alert('Не получилось распознать текст. Попробуйте ещё раз или вставьте текстом.');
+      showScreen('screen-input');
+    }
   }
-  state.profileText = text;
-  showScreen('screen-processing');
-  animateProgress();
-  try {
-    const result = await callBot(text);
-    state.result = result;
-    renderResult();
-    setTimeout(() => showScreen('screen-result'), 600);
-  } catch (err) {
-    console.error(err);
-    alert('Что-то пошло не так. Попробуйте ещё раз через минуту.');
-    showScreen('screen-input');
-  }
+}
+
+async function callBotWithImages(imagesBase64) {
+  const userInfo = getUserInfo();
+  state.userInfo = userInfo;
+  const response = await fetch(`${BOT_API_BASE}/analyze_images`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      images: imagesBase64,
+      init_data: tg?.initData || '',
+    }),
+  });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return await response.json();
 }
 
 function animateProgress() {
@@ -192,8 +298,7 @@ function renderResult() {
   setBlockList('recruiter-recommendations', recruiter.recommendations);
   // Коллега
   setBlockText('colleague-overview', colleague.overview);
-  setBlockList('colleague-strengths', colleague.strengths);
-  setBlockList('colleague-weaknesses', colleague.weaknesses);
+  setBlockList('colleague-thoughts', colleague.thoughts);
   setBlockList('colleague-observations', colleague.observations);
 }
 
@@ -225,8 +330,8 @@ function buildCards() {
     buildPosterCard(recruiter, colleague, name),
     buildRoleCard('recruiter', recruiter.overview, name),
     buildRoleCard('colleague', colleague.overview, name),
-    buildBadgeCard('strong', firstItem(recruiter.strengths) || firstItem(colleague.strengths) || '—', name),
-    buildBadgeCard('weak', firstItem(recruiter.weaknesses) || firstItem(colleague.weaknesses) || '—', name),
+    buildBadgeCard('strong', firstItem(recruiter.strengths) || '—', name),
+    buildBadgeCard('weak', firstItem(recruiter.weaknesses) || '—', name),
   ];
   state.totalCards = cards.length;
   swiper.innerHTML = `<div class="swiper__track" id="swiper-track">${cards.join('')}</div>`;
