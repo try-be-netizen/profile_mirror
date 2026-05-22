@@ -281,8 +281,8 @@ html, body {
   transition: background 0.2s, color 0.2s;
 }
 .input-toggle__btn--active {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--accent-soft);
+  color: var(--accent);
   box-shadow: 0 1px 3px rgba(0,0,0,0.06);
 }
 
