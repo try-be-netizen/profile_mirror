@@ -323,23 +323,54 @@ function trackDiscoveryClick(source) {
   }
 }
 
-function openContact(source, event) {
+async function sendLead(source, event) {
+  if (event) event.preventDefault();
+  const link = event?.currentTarget;
+  if (link?.dataset.busy === '1') return false;
+
   console.log('[discovery] click from:', source);
   if (tg?.HapticFeedback) {
     try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
   }
-  // Внутри Telegram Mini App — используем нативное API
-  if (tg?.openTelegramLink) {
-    if (event) event.preventDefault();
-    try {
-      tg.openTelegramLink('https://t.me/about_xen');
-      return false;
-    } catch (e) {
-      console.error('openTelegramLink failed', e);
-    }
+
+  // Сохраняем оригинальные DOM и состояние
+  const card = link?.closest('.discovery-card');
+  const originalCardHtml = card ? card.innerHTML : null;
+  if (link) link.dataset.busy = '1';
+
+  if (card) {
+    card.innerHTML = '<div class="discovery-card__text">Отправляю…</div>';
   }
-  // Запасной путь: пусть браузер обработает ссылку нативно
-  return true;
+
+  try {
+    const response = await fetch(`${BOT_API_BASE}/lead`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source,
+        init_data: tg?.initData || '',
+        profile_text: state.profileText || '',
+        analysis: state.result || null,
+      }),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    try { tg?.HapticFeedback?.notificationOccurred('success'); } catch (e) {}
+
+    if (card) {
+      card.innerHTML = '<div class="discovery-card__text discovery-card__text--success">✓ Спасибо! Ксюша свяжется в ближайшее время</div>';
+      card.classList.add('discovery-card--success');
+    }
+  } catch (err) {
+    console.error('sendLead error', err);
+    try { tg?.HapticFeedback?.notificationOccurred('error'); } catch (e) {}
+    if (card && originalCardHtml) {
+      card.innerHTML = originalCardHtml;
+    }
+    if (link) link.dataset.busy = '';
+    alert('Не получилось отправить. Попробуйте ещё раз.');
+  }
+  return false;
 }
 
 function goToSwiper() {
