@@ -323,6 +323,25 @@ function trackDiscoveryClick(source) {
   }
 }
 
+function openContact(source, event) {
+  console.log('[discovery] click from:', source);
+  if (tg?.HapticFeedback) {
+    try { tg.HapticFeedback.impactOccurred('light'); } catch (e) {}
+  }
+  // Внутри Telegram Mini App — используем нативное API
+  if (tg?.openTelegramLink) {
+    if (event) event.preventDefault();
+    try {
+      tg.openTelegramLink('https://t.me/about_xen');
+      return false;
+    } catch (e) {
+      console.error('openTelegramLink failed', e);
+    }
+  }
+  // Запасной путь: пусть браузер обработает ссылку нативно
+  return true;
+}
+
 function goToSwiper() {
   buildCards();
   showScreen('screen-swiper');
