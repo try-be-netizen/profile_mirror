@@ -164,8 +164,18 @@ async def handle_analyze_images(request: web.Request) -> web.Response:
     return web.json_response(result)
 
 
+def _format_list(items) -> str:
+    """Форматирует список пунктов в строки с маркерами."""
+    if not items:
+        return ""
+    return "\n".join(f"• {item}" for item in items if item)
+
+
 def _format_lead_message(user: dict, source: str, profile_text: str, analysis: dict) -> str:
-    """Форматирует сообщение-лид для отправки владельцу."""
+    """Форматирует сообщение-лид для отправки владельцу.
+
+    Включает полный текст профиля и полный результат анализа от рекрутера и коллеги.
+    """
     parts = ["🔔 <b>Новый лид</b>\n"]
 
     # Контактные данные
@@ -183,29 +193,79 @@ def _format_lead_message(user: dict, source: str, profile_text: str, analysis: d
     parts.append(f"<b>Кликнул с вкладки:</b> {source}")
     parts.append("")
 
-    # Текст профиля (укороченный)
+    # Текст профиля
     if profile_text:
-        snippet = profile_text[:1500]
-        if len(profile_text) > 1500:
-            snippet += "…"
-        parts.append("<b>📄 Профиль (фрагмент):</b>")
-        parts.append(f"<i>{snippet}</i>")
+        parts.append("<b>📄 Профиль:</b>")
+        parts.append(f"<i>{profile_text}</i>")
         parts.append("")
 
-    # Анализ
+    # Полный анализ рекрутера
     recruiter = analysis.get("recruiter") or {}
-    colleague = analysis.get("colleague") or {}
-
-    if recruiter.get("overview"):
-        parts.append("<b>👁 Рекрутер:</b>")
-        parts.append(recruiter["overview"][:600])
+    if recruiter:
+        parts.append("━━━━━━━━━━━━━━━━━")
+        parts.append("<b>👁 РЕКРУТЕР</b>")
         parts.append("")
+        if recruiter.get("overview"):
+            parts.append("<b>Первое впечатление:</b>")
+            parts.append(recruiter["overview"])
+            parts.append("")
+        if recruiter.get("strengths"):
+            parts.append("<b>Сильное:</b>")
+            parts.append(_format_list(recruiter["strengths"]))
+            parts.append("")
+        if recruiter.get("weaknesses"):
+            parts.append("<b>Слабое:</b>")
+            parts.append(_format_list(recruiter["weaknesses"]))
+            parts.append("")
+        if recruiter.get("recommendations"):
+            parts.append("<b>Рекомендации:</b>")
+            parts.append(_format_list(recruiter["recommendations"]))
+            parts.append("")
 
-    if colleague.get("overview"):
-        parts.append("<b>☕ Коллега:</b>")
-        parts.append(colleague["overview"][:600])
+    # Полный анализ коллеги
+    colleague = analysis.get("colleague") or {}
+    if colleague:
+        parts.append("━━━━━━━━━━━━━━━━━")
+        parts.append("<b>☕ КОЛЛЕГА</b>")
+        parts.append("")
+        if colleague.get("overview"):
+            parts.append("<b>Первое впечатление:</b>")
+            parts.append(colleague["overview"])
+            parts.append("")
+        if colleague.get("thoughts"):
+            parts.append("<b>Мысли вслух:</b>")
+            parts.append(_format_list(colleague["thoughts"]))
+            parts.append("")
+        if colleague.get("observations"):
+            parts.append("<b>Наблюдения:</b>")
+            parts.append(_format_list(colleague["observations"]))
+            parts.append("")
 
     return "\n".join(parts)
+
+
+def _split_message(text: str, max_length: int = 4000) -> list[str]:
+    """Разбивает длинный текст на части не больше max_length символов.
+
+    Сохраняет переносы строк — режет только по '\\n', не посередине слова.
+    """
+    if len(text) <= max_length:
+        return [text]
+
+    parts = []
+    current = []
+    current_length = 0
+    for line in text.split("\n"):
+        line_with_newline = line + "\n"
+        if current_length + len(line_with_newline) > max_length and current:
+            parts.append("".join(current).rstrip())
+            current = []
+            current_length = 0
+        current.append(line_with_newline)
+        current_length += len(line_with_newline)
+    if current:
+        parts.append("".join(current).rstrip())
+    return parts
 
 
 async def handle_lead(request: web.Request) -> web.Response:
@@ -233,12 +293,16 @@ async def handle_lead(request: web.Request) -> web.Response:
 
     bot = request.app["bot"]
     text = _format_lead_message(user, source, profile_text, analysis)
+    chunks = _split_message(text)
+
     try:
-        await bot.send_message(
-            chat_id=int(OWNER_USER_ID),
-            text=text,
-            parse_mode="HTML",
-        )
+        for i, chunk in enumerate(chunks):
+            await bot.send_message(
+                chat_id=int(OWNER_USER_ID),
+                text=chunk,
+                parse_mode="HTML",
+                disable_web_page_preview=True,
+            )
     except Exception:
         logger.exception("Не получилось отправить лид владельцу")
         return web.json_response({"error": "delivery_failed"}, status=500)
