@@ -585,6 +585,16 @@ html, body {
 }
 .discovery-card__link:hover { opacity: 0.7; }
 .discovery-card__link:active { opacity: 0.5; }
+.discovery-card--success {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+.discovery-card__text--success {
+  color: var(--accent);
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+}
 
 /* === СВАЙПЕР === */
 .swiper-header {
